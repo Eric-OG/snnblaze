@@ -1,14 +1,13 @@
 #include "NeuralNetwork.h"
 #include <memory>
 #include <stdexcept>
-#include <limits>
 #include <vector>
 
 void NeuralNetwork::addNeuronPopulation(size_t size, std::shared_ptr<Neuron> neuron_type){
     size_t prev_size = neuron_states_.size();
     // Increase vectors to handle new state variables
     this->neuron_states_.resize(prev_size + size, neuron_type->getInitValue());
-    this->neuron_last_spikes_.resize(prev_size + size, -std::numeric_limits<double>::max());
+    this->neuron_last_spikes_.resize(prev_size + size, 0.0);
     this->neuron_types_.resize(prev_size + size, neuron_type);
 
     auto new_pop = std::make_unique<NeuronPopulation>(
@@ -47,15 +46,13 @@ void NeuralNetwork::run(double T) {
 
         if (e.time > T) break;
 
-        // Deliver input
-        neuron_types_[e.target_index]->receive(
-            e.weight,
+        // Deliver input and update state
+        if (neuron_types_[e.target_index]->update(
+            e.time,
             &neuron_states_[e.target_index],
-            &neuron_last_spikes_[e.target_index]
-        );
-
-        // TODO: double check receive and update orders
-        if (neuron_types_[e.target_index]->update(e.time, &neuron_states_[e.target_index], &neuron_last_spikes_[e.target_index])) {
+            &neuron_last_spikes_[e.target_index], 
+            e.weight)
+        ) {
             if (spike_monitor_) spike_monitor_->onSpike(e.time, e.target_index);
             
             // Schedules spike events to post-synaptic neurons

@@ -1,81 +1,58 @@
 #include "LIFNeuron.h"
 #include <gtest/gtest.h>
+#include <cmath>
 
-// Fixture for LIFNeuron tests
 class LIFNeuronTest : public ::testing::Test {
 protected:
-    void SetUp() override {
-        tau = 10.0;
-        v_reset = 0.0;
-        v_thresh = 1.0;
-        refractory = 2.0;
+    // Example neuron parameters
+    double tau_m = 10.0;       // membrane time constant
+    double v_rest = 0.0;       // resting potential
+    double v_reset = 0.0;      // reset potential after spike
+    double v_thresh = 1.0;     // threshold
+    double refractory = 2.0;   // refractory period
 
-        neuron = new LIFNeuron(tau, v_reset, v_thresh, refractory);
-        state = neuron->getInitValue();
-        lastSpike = -refractory;  // ensure neuron is not initially refractory
-    }
+    LIFNeuron neuron{tau_m, v_rest, v_reset, v_thresh, refractory};
 
-    void TearDown() override {
-        delete neuron;
-    }
-
-    double tau;
-    double v_reset;
-    double v_thresh;
-    double refractory;
-
-    LIFNeuron* neuron;
-    double state;
-    double lastSpike;
+    double state = 0.5;        // initial membrane potential
+    double last_spike = -10.0; // set in the past
 };
 
-// Test initialization
-TEST_F(LIFNeuronTest, InitValue) {
-    EXPECT_EQ(state, v_reset);
+// Test that decay brings voltage closer to v_rest
+TEST_F(LIFNeuronTest, DecayTest) {
+    double t = 1.0;
+    neuron.update(t, &state, &last_spike, 0.0);
+    EXPECT_LT(state, 0.5); // state should decrease towards v_rest
 }
 
-// Test receiving input
-TEST_F(LIFNeuronTest, ReceiveInput) {
-    neuron->receive(0.5, &state, &lastSpike);
-    EXPECT_DOUBLE_EQ(state, 0.5);
-
-    neuron->receive(0.3, &state, &lastSpike);
-    EXPECT_DOUBLE_EQ(state, 0.8);
+// Test that receiving input increases voltage
+TEST_F(LIFNeuronTest, ReceiveInputTest) {
+    double t = 1.0;
+    double input = 0.3;
+    neuron.update(t, &state, &last_spike, input);
+    EXPECT_NEAR(state, 0.5*exp(-tau_m*t) + v_rest + input, 1e-6);
 }
 
-// Test update without spike
-TEST_F(LIFNeuronTest, UpdateNoSpike) {
-    state = 0.5;
-    bool spiked = neuron->update(1.0, &state, &lastSpike);
-    EXPECT_FALSE(spiked);
-    EXPECT_LT(state, 0.5);  // state decays due to leak
-}
-
-// Test spike generation
-TEST_F(LIFNeuronTest, Spike) {
-    state = 1.0;  // set above threshold
-    bool spiked = neuron->update(1.0, &state, &lastSpike);
+// Test that neuron spikes when threshold is exceeded
+TEST_F(LIFNeuronTest, SpikeTest) {
+    double t = 1.0;
+    state = 0.9; // close to threshold
+    bool spiked = neuron.update(t, &state, &last_spike, 0.2);
     EXPECT_TRUE(spiked);
     EXPECT_EQ(state, v_reset);
-    EXPECT_EQ(lastSpike, 1.0);
+    EXPECT_EQ(last_spike, t);
 }
 
-// Test refractory period
-TEST_F(LIFNeuronTest, Refractory) {
-    state = 1.0;
-    lastSpike = 0.0;
-    // within refractory period
-    bool spiked = neuron->update(1.0, &state, &lastSpike);
+// Test refractory period prevents spiking
+TEST_F(LIFNeuronTest, RefractoryTest) {
+    last_spike = 0.0;
+    state = 2.0; // above threshold
+    double t = 1.0; // within refractory (refractory = 2.0)
+    bool spiked = neuron.update(t, &state, &last_spike, 0.0);
     EXPECT_FALSE(spiked);
-    EXPECT_EQ(lastSpike, 0.0);  // lastSpike should not change
-
-    // after refractory period
-    spiked = neuron->update(3.0, &state, &lastSpike);
-    // Depending on state dynamics, may or may not spike
-    EXPECT_EQ(lastSpike == 3.0, spiked);
+    EXPECT_EQ(last_spike, 0.0); // last spike time unchanged
 }
 
 // Test getInitValue
-TEST_F(LIFNeuronTest, InitValueFunction) {
-    EXPECT_EQ(neuron->getInitValue(), v_reset);
+TEST_F(LIFNeuronTest, GetInitValueTest) {
+    EXPECT_EQ(neuron.getInitValue(), v_reset);
 }

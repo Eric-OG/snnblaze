@@ -9,8 +9,8 @@ class Neuron {
 public:
     virtual ~Neuron() = default;
 
-    // Advance the state by dt in the absence of inputs - assumes the system is Markovian
-    virtual bool update(double t, double* state, double* lastSpike)=0;
+    // Advance the state with an input at time t
+    virtual bool update(double t, double* state, double* lastSpike, double input)=0;
 
     // Receive synaptic input (current)
     virtual void receive(double value, double* state, double* lastSpike)=0;

@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Library from your sources
-add_library(neuralsim
+add_library(snnblaze
     src/LIFNeuron.cpp
     src/NeuralNetwork.cpp
     src/SpikeMonitor.cpp
@@ -33,7 +33,7 @@ add_executable(test_neurons
 
 target_link_libraries(test_neurons
     PRIVATE
-    neuralsim
+    snnblaze
     gtest
     gtest_main
 )

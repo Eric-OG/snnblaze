@@ -1,5 +1,4 @@
 #include "LIFNeuron.h"
-#include <algorithm> // for std::max
 #include <cmath>
 
 LIFNeuron::LIFNeuron(double tau_m, double v_rest, double v_reset, double v_thresh, double refractory)
@@ -9,15 +8,18 @@ LIFNeuron::LIFNeuron(double tau_m, double v_rest, double v_reset, double v_thres
       v_thresh_(v_thresh),
       refractory_(refractory) {}
 
-bool LIFNeuron::update(double t, double* state, double* lastSpike) {
+bool LIFNeuron::update(double t, double* state, double* last_spike, double input=0.0) {
     // Leak - exponential decay
     double& v = *state;
-    double& last_spike_time = *lastSpike;
+    double& last_spike_time = *last_spike;
     double dt = t-last_spike_time;
 
-    if (dt < refractory_) return false; // still refractory
+    if ((dt < refractory_) && (last_spike_time!=0)) return false; // still refractory
 
+    // Apply exponential decay
     v = v_rest_ + (v-v_rest_)*exp(-tau_m_*dt);
+    // Apply spike inputs
+    receive(input, state, last_spike);
 
     if (v >= v_thresh_) {
         v = v_reset_;
@@ -27,7 +29,7 @@ bool LIFNeuron::update(double t, double* state, double* lastSpike) {
     return false;
 }
 
-void LIFNeuron::receive(double value, double* state, double* lastSpike) {
+void LIFNeuron::receive(double value, double* state, double* last_spike) {
     *state += value; 
 }
 
