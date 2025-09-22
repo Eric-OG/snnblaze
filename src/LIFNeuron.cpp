@@ -17,7 +17,7 @@ bool LIFNeuron::update(double t, double* state, double* last_spike, double input
     if ((dt < refractory_) && (last_spike_time!=0)) return false; // still refractory
 
     // Apply exponential decay
-    v = v_rest_ + (v-v_rest_)*exp(-tau_m_*dt);
+    v = v_rest_ + (v-v_rest_)*exp(-dt/tau_m_);
     // Apply spike inputs
     receive(input, state, last_spike);
 

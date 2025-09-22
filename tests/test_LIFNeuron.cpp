@@ -14,7 +14,7 @@ protected:
     LIFNeuron neuron{tau_m, v_rest, v_reset, v_thresh, refractory};
 
     double state = 0.5;        // initial membrane potential
-    double last_spike = -10.0; // set in the past
+    double last_spike = 0;     // set at the start of the timeline
 };
 
 // Test that decay brings voltage closer to v_rest
@@ -28,8 +28,10 @@ TEST_F(LIFNeuronTest, DecayTest) {
 TEST_F(LIFNeuronTest, ReceiveInputTest) {
     double t = 1.0;
     double input = 0.3;
+    std::cout << t;
     neuron.update(t, &state, &last_spike, input);
-    EXPECT_NEAR(state, 0.5*exp(-tau_m*t) + v_rest + input, 1e-6);
+    double expected = 0.5*exp(-t/tau_m) + v_rest + input;
+    EXPECT_NEAR(state, expected, 1e-6);
 }
 
 // Test that neuron spikes when threshold is exceeded
@@ -44,12 +46,12 @@ TEST_F(LIFNeuronTest, SpikeTest) {
 
 // Test refractory period prevents spiking
 TEST_F(LIFNeuronTest, RefractoryTest) {
-    last_spike = 0.0;
+    last_spike = 1.0;
     state = 2.0; // above threshold
-    double t = 1.0; // within refractory (refractory = 2.0)
+    double t = 2.0; // within refractory (refractory = 2.0)
     bool spiked = neuron.update(t, &state, &last_spike, 0.0);
     EXPECT_FALSE(spiked);
-    EXPECT_EQ(last_spike, 0.0); // last spike time unchanged
+    EXPECT_EQ(last_spike, 1.0); // last spike time unchanged
 }
 
 // Test getInitValue
