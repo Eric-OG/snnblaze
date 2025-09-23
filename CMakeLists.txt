@@ -14,14 +14,39 @@ add_library(snnblaze
     src/SpikeMonitor.cpp
 )
 
-# GoogleTest
+set_target_properties(snnblaze PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+# Include python headers
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+include_directories(${Python3_INCLUDE_DIRS})
+
+# ---------------------------
+# Fetch pybind11
+# ---------------------------
 include(FetchContent)
+FetchContent_Declare(
+  pybind11
+  URL https://github.com/pybind/pybind11/archive/refs/heads/master.zip
+)
+FetchContent_MakeAvailable(pybind11)
+
+# ---------------------------
+# Python extension module
+# ---------------------------
+# Assuming you create src/bindings.cpp for your pybind11 bindings
+pybind11_add_module(pysnnblaze src/bindings.cpp)
+
+# Link with your library
+target_link_libraries(pysnnblaze PRIVATE snnblaze)
+
+# ---------------------------
+# GoogleTest
+# ---------------------------
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/refs/heads/main.zip
 )
-# For Windows: prevent overriding parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # Windows fix
 FetchContent_MakeAvailable(googletest)
 
 enable_testing()
