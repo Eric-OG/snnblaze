@@ -22,12 +22,11 @@ public:
     // Schedule external input event
     void schedule_spike_event(double time, size_t neuronIndex, double weight);
 
-    void set_spike_monitor(std::unique_ptr<SpikeMonitor> monitor);
+    void set_spike_monitor(std::shared_ptr<SpikeMonitor> monitor);
 
     // Run simulation until time T
     void run(double T);
 
-    Neuron* get_neuron(size_t index);
     size_t size() const;
 
 private:
@@ -43,5 +42,5 @@ private:
     std::priority_queue<SpikeEvent> eventQueue_;
 
     // Monitors (optional)
-    std::unique_ptr<SpikeMonitor> spike_monitor_;
+    std::shared_ptr<SpikeMonitor> spike_monitor_;
 };

@@ -6,7 +6,7 @@
 
 class SpikeMonitor {
 public:
-    void on_spike(int neuron_id, double time);
+    void on_spike(double time, int neuron_id);
     void reset_spikes();
 
     // Public for direct access from python

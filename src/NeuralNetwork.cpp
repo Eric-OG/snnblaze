@@ -27,8 +27,8 @@ void NeuralNetwork::add_synapse(const Synapse& synapse) {
     adjacency_[synapse.srcId].push_back(synapse);
 }
 
-void NeuralNetwork::set_spike_monitor(std::unique_ptr<SpikeMonitor> monitor) {
-    spike_monitor_ = std::move(monitor);
+void NeuralNetwork::set_spike_monitor(std::shared_ptr<SpikeMonitor> monitor) {
+    spike_monitor_ = monitor;
 }
 
 void NeuralNetwork::schedule_spike_event(double time, size_t neuron_index, double weight) {

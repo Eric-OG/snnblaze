@@ -3,7 +3,7 @@
 
 TEST(SpikeMonitorTest, RecordSingleSpike) {
     SpikeMonitor monitor;
-    monitor.on_spike(1, 0.5);
+    monitor.on_spike(0.5, 1);
 
     ASSERT_EQ(monitor.spike_list.size(), 1);
     EXPECT_DOUBLE_EQ(monitor.spike_list[0].first, 0.5);
@@ -12,9 +12,9 @@ TEST(SpikeMonitorTest, RecordSingleSpike) {
 
 TEST(SpikeMonitorTest, RecordMultipleSpikesInOrder) {
     SpikeMonitor monitor;
-    monitor.on_spike(0, 0.1);
-    monitor.on_spike(2, 0.3);
-    monitor.on_spike(1, 0.2);
+    monitor.on_spike(0.1, 0);
+    monitor.on_spike(0.3, 2);
+    monitor.on_spike(0.2, 1);
 
     ASSERT_EQ(monitor.spike_list.size(), 3);
     EXPECT_DOUBLE_EQ(monitor.spike_list[0].first, 0.1);
@@ -27,8 +27,8 @@ TEST(SpikeMonitorTest, RecordMultipleSpikesInOrder) {
 
 TEST(SpikeMonitorTest, ResetSpikes) {
     SpikeMonitor monitor;
-    monitor.on_spike(1, 0.5);
-    monitor.on_spike(2, 1.0);
+    monitor.on_spike(0.5, 1);
+    monitor.on_spike(1.0, 2);
 
     ASSERT_EQ(monitor.spike_list.size(), 2);
 

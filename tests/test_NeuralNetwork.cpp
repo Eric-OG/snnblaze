@@ -63,7 +63,7 @@ TEST_F(NeuralNetworkTest, SpikePropagation) {
     net.add_synapse(syn);
 
     // Set spike monitor
-    auto monitor = std::make_unique<SpikeMonitor>();
+    auto monitor = std::make_shared<SpikeMonitor>();
     SpikeMonitor* monitor_ptr = monitor.get();
     net.set_spike_monitor(std::move(monitor));
 
