@@ -3,10 +3,10 @@
 #include <stdexcept>
 #include <vector>
 
-void NeuralNetwork::addNeuronPopulation(size_t size, std::shared_ptr<Neuron> neuron_type){
+void NeuralNetwork::add_neuron_population(size_t size, std::shared_ptr<Neuron> neuron_type) {
     size_t prev_size = neuron_states_.size();
     // Increase vectors to handle new state variables
-    this->neuron_states_.resize(prev_size + size, neuron_type->getInitValue());
+    this->neuron_states_.resize(prev_size + size, neuron_type->get_init_value());
     this->neuron_last_spikes_.resize(prev_size + size, 0.0);
     this->neuron_types_.resize(prev_size + size, neuron_type);
 
@@ -19,20 +19,20 @@ void NeuralNetwork::addNeuronPopulation(size_t size, std::shared_ptr<Neuron> neu
     this->neuron_populations_.push_back(std::move(new_pop));
 }
 
-void NeuralNetwork::addSynapse(const Synapse& synapse) {
+void NeuralNetwork::add_synapse(const Synapse& synapse) {
     if (synapse.srcId >= neuron_states_.size() || synapse.dstId >= neuron_states_.size()) {
         throw std::out_of_range("Neuron index out of bounds for synapse");
     }
     adjacency_[synapse.srcId].push_back(synapse);
 }
 
-void NeuralNetwork::setSpikeMonitor(std::unique_ptr<SpikeMonitor> monitor){
+void NeuralNetwork::set_spike_monitor(std::unique_ptr<SpikeMonitor> monitor) {
     spike_monitor_ = std::move(monitor);
 }
 
-void NeuralNetwork::scheduleSpikeEvent(double time, size_t neuronIndex, double weight) {
-    if (neuronIndex >= neuron_states_.size()) throw std::out_of_range("Neuron index out of bounds");
-    eventQueue_.push(SpikeEvent{time, neuronIndex, weight});
+void NeuralNetwork::schedule_spike_event(double time, size_t neuron_index, double weight) {
+    if (neuron_index >= neuron_states_.size()) throw std::out_of_range("Neuron index out of bounds");
+    eventQueue_.push(SpikeEvent{time, neuron_index, weight});
 }
 
 size_t NeuralNetwork::size() const {

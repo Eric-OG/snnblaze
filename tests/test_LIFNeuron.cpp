@@ -56,5 +56,5 @@ TEST_F(LIFNeuronTest, RefractoryTest) {
 
 // Test getInitValue
 TEST_F(LIFNeuronTest, GetInitValueTest) {
-    EXPECT_EQ(neuron.getInitValue(), v_reset);
+    EXPECT_EQ(neuron.get_init_value(), v_reset);
 }

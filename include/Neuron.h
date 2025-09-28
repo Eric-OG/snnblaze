@@ -19,7 +19,7 @@ public:
     virtual void receive(double value, double* state, double* lastSpike)=0;
 
     // Must return the value to which the neuron is initialized
-    virtual double getInitValue()=0;
+    virtual double get_init_value()=0;
 };
 
 
@@ -46,11 +46,11 @@ public:
         );
     }
 
-    double getInitValue() override {
+    double get_init_value() override {
         PYBIND11_OVERRIDE_PURE(
             double,
             Neuron,
-            getInitValue
+            get_init_value
         );
     }
 };

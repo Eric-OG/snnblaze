@@ -19,7 +19,7 @@ PYBIND11_MODULE(pysnnblaze, m) {
             auto lastSpike_ptr = static_cast<double*>(lastSpike.request().ptr);
             self.receive(value, state_ptr, lastSpike_ptr);
         })
-        .def("getInitValue", &Neuron::getInitValue);
+        .def("get_init_value", &Neuron::get_init_value);
 
     py::class_<LIFNeuron, Neuron>(m, "LIFNeuron")
         .def(py::init<double, double, double, double, double>(), 
@@ -39,5 +39,5 @@ PYBIND11_MODULE(pysnnblaze, m) {
             auto lastSpike_ptr = static_cast<double*>(lastSpike.request().ptr);
             self.receive(value, state_ptr, lastSpike_ptr);
         })
-        .def("getInitValue", &LIFNeuron::getInitValue);
+        .def("get_init_value", &LIFNeuron::get_init_value);
 }

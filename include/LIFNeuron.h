@@ -11,7 +11,7 @@ public:
 
     bool update(double t, double* state, double* last_spike, double input) override;
     void receive(double value, double* state, double* last_spike) override;
-    double getInitValue() override;
+    double get_init_value() override;
 
     // Public variable to make acess easier from Python
     double tau_m_;
