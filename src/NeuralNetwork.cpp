@@ -9,6 +9,7 @@ void NeuralNetwork::add_neuron_population(size_t size, std::shared_ptr<Neuron> n
     this->neuron_states_.resize(prev_size + size, neuron_type->get_init_value());
     this->neuron_last_spikes_.resize(prev_size + size, 0.0);
     this->neuron_types_.resize(prev_size + size, neuron_type);
+    this->adjacency_.resize(prev_size + size);
 
     auto new_pop = std::make_unique<NeuronPopulation>(
         size,
