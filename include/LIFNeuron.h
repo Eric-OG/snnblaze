@@ -13,7 +13,7 @@ public:
     void receive(double value, double* state, double* last_spike) override;
     double getInitValue() override;
 
-private:
+    // Public variable to make acess easier from Python
     double tau_m_;
     double v_rest_;
     double v_reset_;
