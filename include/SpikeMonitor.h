@@ -1,13 +1,14 @@
 #pragma once
 #include <string>
+#include <vector>
+#include <memory>
 #include "SpikeEvent.h"
 
 class SpikeMonitor {
 public:
-    void setOutputFile(const std::string& filename);
-    void onSpike(int neuron_id, double time);
-    void closeFile();
+    void on_spike(int neuron_id, double time);
+    void reset_spikes();
 
-private:
-    std::string output_file;
+    // Public for direct access from python
+    std::vector<std::pair<double, size_t>> spike_list;
 };

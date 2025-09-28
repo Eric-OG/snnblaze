@@ -50,18 +50,16 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # Windows fix
 FetchContent_MakeAvailable(googletest)
 
 enable_testing()
-
-# Test executable
-add_executable(test_neurons
-    tests/test_LIFNeuron.cpp
-)
-
-target_link_libraries(test_neurons
-    PRIVATE
-    snnblaze
-    gtest
-    gtest_main
-)
-
 include(GoogleTest)
-gtest_discover_tests(test_neurons)
+
+# ---------------------------
+# Collect and build all test files in tests/
+# ---------------------------
+file(GLOB TEST_SOURCES tests/*.cpp)
+
+foreach(test_src ${TEST_SOURCES})
+    get_filename_component(test_name ${test_src} NAME_WE) # e.g. test_LIFNeuron
+    add_executable(${test_name} ${test_src})
+    target_link_libraries(${test_name} PRIVATE snnblaze gtest gtest_main)
+    gtest_discover_tests(${test_name})
+endforeach()

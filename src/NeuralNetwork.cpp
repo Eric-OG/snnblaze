@@ -53,7 +53,7 @@ void NeuralNetwork::run(double T) {
             &neuron_last_spikes_[e.target_index], 
             e.weight)
         ) {
-            if (spike_monitor_) spike_monitor_->onSpike(e.time, e.target_index);
+            if (spike_monitor_) spike_monitor_->on_spike(e.time, e.target_index);
             
             // Schedules spike events to post-synaptic neurons
             for (const auto& syn : adjacency_[e.target_index]) {
