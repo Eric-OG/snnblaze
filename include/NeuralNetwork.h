@@ -6,8 +6,9 @@
 #include "Neuron.h"
 #include "NeuronPopulation.h"
 #include "Synapse.h"
-#include "SpikeEvent.h"
+#include "Event.h"
 #include "SpikeMonitor.h"
+#include "StateMonitor.h"
 
 // NeuralNetwork: event-driven simulation engine
 class NeuralNetwork {
@@ -23,6 +24,7 @@ public:
     void schedule_spike_event(double time, size_t neuronIndex, double weight);
 
     void set_spike_monitor(std::shared_ptr<SpikeMonitor> monitor);
+    void set_state_monitor(std::shared_ptr<StateMonitor> monitor);
 
     // Run simulation until time T
     void run(double T);
@@ -39,8 +41,9 @@ private:
     std::vector<std::shared_ptr<Neuron>> neuron_types_;
 
     std::vector<std::vector<Synapse>> adjacency_;
-    std::priority_queue<SpikeEvent> eventQueue_;
+    std::priority_queue<Event, std::vector<Event>, EventCompare> eventQueue_;
 
     // Monitors (optional)
     std::shared_ptr<SpikeMonitor> spike_monitor_;
+    std::shared_ptr<StateMonitor> state_monitor_;
 };

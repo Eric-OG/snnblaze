@@ -12,6 +12,7 @@ add_library(snnblaze
     src/LIFNeuron.cpp
     src/NeuralNetwork.cpp
     src/SpikeMonitor.cpp
+    src/StateMonitor.cpp
 )
 
 set_target_properties(snnblaze PROPERTIES POSITION_INDEPENDENT_CODE ON)

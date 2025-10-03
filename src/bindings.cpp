@@ -52,6 +52,13 @@ PYBIND11_MODULE(pysnnblaze, m) {
         .def_readwrite("spike_list", &SpikeMonitor::spike_list,
                     "List of (time, neuron_id) pairs");
 
+    py::class_<StateMonitor, std::shared_ptr<StateMonitor>>(m, "StateMonitor")
+        .def(py::init<double>(), py::arg("reading_interval"))
+        .def("on_read", &StateMonitor::on_read, py::arg("time"), py::arg("state_vector"))
+        .def("reset_recording", &StateMonitor::reset_recording)
+        .def("get_reading_interval", &StateMonitor::get_reading_interval)
+        .def_readwrite("state_vector_list", &StateMonitor::state_vector_list);
+
     py::class_<Synapse>(m, "Synapse")
         .def(py::init<size_t, size_t, double, double>(),
              py::arg("srcId"), py::arg("dstId"), py::arg("weight"), py::arg("delay"))
@@ -70,6 +77,7 @@ PYBIND11_MODULE(pysnnblaze, m) {
         .def("schedule_spike_event", &NeuralNetwork::schedule_spike_event,
              py::arg("time"), py::arg("neuronIndex"), py::arg("weight"))
         .def("set_spike_monitor", &NeuralNetwork::set_spike_monitor, py::arg("monitor"))
+        .def("set_state_monitor", &NeuralNetwork::set_state_monitor, py::arg("monitor"))
         .def("run", &NeuralNetwork::run, py::arg("T"))
         .def("size", &NeuralNetwork::size);
 }

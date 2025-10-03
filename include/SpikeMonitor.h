@@ -1,8 +1,7 @@
 #pragma once
-#include <string>
 #include <vector>
 #include <memory>
-#include "SpikeEvent.h"
+#include "Event.h"
 
 class SpikeMonitor {
 public:
