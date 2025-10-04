@@ -35,6 +35,7 @@ private:
     // Each population may have different types (properties)
     std::vector<std::unique_ptr<NeuronPopulation>> neuron_populations_; 
     // State vectors aggregate all populations - exploiting cache locality
+    std::vector<double> neuron_last_updates_;
     std::vector<double> neuron_last_spikes_;
     std::vector<double> neuron_states_;
     // Fast (O(1)) lookup to neuron types

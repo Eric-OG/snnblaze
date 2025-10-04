@@ -1,6 +1,7 @@
 #include "LIFNeuron.h"
 #include <gtest/gtest.h>
 #include <cmath>
+#include <limits>
 
 class LIFNeuronTest : public ::testing::Test {
 protected:
@@ -14,13 +15,14 @@ protected:
     LIFNeuron neuron{tau_m, v_rest, v_reset, v_thresh, refractory};
 
     double state = 0.5;        // initial membrane potential
-    double last_spike = 0;     // set at the start of the timeline
+    double last_spike = -std::numeric_limits<double>::infinity();     // set at the start of the timeline
+    double last_update = 0;     // set at the start of the timeline
 };
 
 // Test that decay brings voltage closer to v_rest
 TEST_F(LIFNeuronTest, DecayTest) {
     double t = 1.0;
-    neuron.update(t, &state, &last_spike, 0.0);
+    neuron.update(t, &state, &last_spike, &last_update, 0.0);
     EXPECT_LT(state, 0.5); // state should decrease towards v_rest
 }
 
@@ -29,7 +31,7 @@ TEST_F(LIFNeuronTest, ReceiveInputTest) {
     double t = 1.0;
     double input = 0.3;
     std::cout << t;
-    neuron.update(t, &state, &last_spike, input);
+    neuron.update(t, &state, &last_spike, &last_update, input);
     double expected = 0.5*exp(-t/tau_m) + v_rest + input;
     EXPECT_NEAR(state, expected, 1e-6);
 }
@@ -38,7 +40,7 @@ TEST_F(LIFNeuronTest, ReceiveInputTest) {
 TEST_F(LIFNeuronTest, SpikeTest) {
     double t = 1.0;
     state = 0.9; // close to threshold
-    bool spiked = neuron.update(t, &state, &last_spike, 0.2);
+    bool spiked = neuron.update(t, &state, &last_spike, &last_update, 0.2);
     EXPECT_TRUE(spiked);
     EXPECT_EQ(state, v_reset);
     EXPECT_EQ(last_spike, t);
@@ -49,7 +51,7 @@ TEST_F(LIFNeuronTest, RefractoryTest) {
     last_spike = 1.0;
     state = 2.0; // above threshold
     double t = 2.0; // within refractory (refractory = 2.0)
-    bool spiked = neuron.update(t, &state, &last_spike, 0.0);
+    bool spiked = neuron.update(t, &state, &last_spike, &last_update, 0.0);
     EXPECT_FALSE(spiked);
     EXPECT_EQ(last_spike, 1.0); // last spike time unchanged
 }

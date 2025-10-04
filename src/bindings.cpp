@@ -11,16 +11,18 @@ namespace py = pybind11;
 
 PYBIND11_MODULE(pysnnblaze, m) {
     py::class_<Neuron, PyNeuron, std::shared_ptr<Neuron>>(m, "Neuron")
-        .def("update", [](Neuron &self, double t, py::array_t<double> state, py::array_t<double> lastSpike, double input) {
+        .def("update", [](Neuron &self, double t, py::array_t<double> state, py::array_t<double> lastSpike, py::array_t<double> lastUpdate, double input) {
             // Ensure arrays are contiguous and size=1
             auto state_ptr = static_cast<double*>(state.request().ptr);
             auto lastSpike_ptr = static_cast<double*>(lastSpike.request().ptr);
-            return self.update(t, state_ptr, lastSpike_ptr, input);
+            auto lastUpdate_ptr = static_cast<double*>(lastUpdate.request().ptr);
+            return self.update(t, state_ptr, lastSpike_ptr, lastUpdate_ptr, input);
         })
-        .def("receive", [](Neuron &self, double value, py::array_t<double> state, py::array_t<double> lastSpike) {
+        .def("receive", [](Neuron &self, double value, py::array_t<double> state, py::array_t<double> lastSpike, py::array_t<double> lastUpdate) {
             auto state_ptr = static_cast<double*>(state.request().ptr);
             auto lastSpike_ptr = static_cast<double*>(lastSpike.request().ptr);
-            self.receive(value, state_ptr, lastSpike_ptr);
+            auto lastUpdate_ptr = static_cast<double*>(lastUpdate.request().ptr);
+            self.receive(value, state_ptr, lastSpike_ptr, lastUpdate_ptr);
         })
         .def("get_init_value", &Neuron::get_init_value);
 
@@ -32,15 +34,17 @@ PYBIND11_MODULE(pysnnblaze, m) {
         .def_readwrite("v_reset", &LIFNeuron::v_reset_)
         .def_readwrite("v_thresh", &LIFNeuron::v_thresh_)
         .def_readwrite("refractory", &LIFNeuron::refractory_)
-        .def("update", [](LIFNeuron &self, double t, py::array_t<double> state, py::array_t<double> lastSpike, double input) {
+        .def("update", [](LIFNeuron &self, double t, py::array_t<double> state, py::array_t<double> lastSpike, py::array_t<double> lastUpdate, double input) {
             auto state_ptr = static_cast<double*>(state.request().ptr);
             auto lastSpike_ptr = static_cast<double*>(lastSpike.request().ptr);
-            return self.update(t, state_ptr, lastSpike_ptr, input);
+            auto lastUpdate_ptr = static_cast<double*>(lastUpdate.request().ptr);
+            return self.update(t, state_ptr, lastSpike_ptr, lastUpdate_ptr, input);
         })
-        .def("receive", [](LIFNeuron &self, double value, py::array_t<double> state, py::array_t<double> lastSpike) {
+        .def("receive", [](LIFNeuron &self, double value, py::array_t<double> state, py::array_t<double> lastSpike, py::array_t<double> lastUpdate) {
             auto state_ptr = static_cast<double*>(state.request().ptr);
             auto lastSpike_ptr = static_cast<double*>(lastSpike.request().ptr);
-            self.receive(value, state_ptr, lastSpike_ptr);
+            auto lastUpdate_ptr = static_cast<double*>(lastUpdate.request().ptr);
+            self.receive(value, state_ptr, lastSpike_ptr, lastUpdate_ptr);
         })
         .def("get_init_value", &LIFNeuron::get_init_value);
     

@@ -13,10 +13,10 @@ public:
     virtual ~Neuron() = default;
 
     // Advance the state with an input at time t
-    virtual bool update(double t, double* state, double* lastSpike, double input)=0;
+    virtual bool update(double t, double* state, double* last_spike, double* last_update, double input)=0;
 
     // Receive synaptic input (current)
-    virtual void receive(double value, double* state, double* lastSpike)=0;
+    virtual void receive(double value, double* state, double* last_spike, double* last_update)=0;
 
     // Must return the value to which the neuron is initialized
     virtual double get_init_value()=0;
@@ -28,21 +28,21 @@ class PyNeuron : public Neuron {
 public:
     using Neuron::Neuron;
 
-    bool update(double t, double* state, double* lastSpike, double input) override {
+    bool update(double t, double* state, double* last_spike, double* last_update, double input) override {
         PYBIND11_OVERRIDE_PURE(
             bool,
             Neuron,
             update,
-            t, state, lastSpike, input
+            t, state, last_spike, last_update, input
         );
     }
 
-    void receive(double value, double* state, double* lastSpike) override {
+    void receive(double value, double* state, double* last_spike, double* last_update) override {
         PYBIND11_OVERRIDE_PURE(
             void,
             Neuron,
             receive,
-            value, state, lastSpike
+            value, state, last_spike, last_update
         );
     }
 

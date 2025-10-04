@@ -9,8 +9,8 @@ public:
               double v_thresh = 1.0,
               double refractory = 0.002);
 
-    bool update(double t, double* state, double* last_spike, double input) override;
-    void receive(double value, double* state, double* last_spike) override;
+    bool update(double t, double* state, double* last_spike, double* last_update, double input) override;
+    void receive(double value, double* state, double* last_spike, double* last_update) override;
     double get_init_value() override;
 
     // Public variable to make acess easier from Python

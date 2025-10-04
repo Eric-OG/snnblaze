@@ -2,22 +2,26 @@
 #include <memory>
 #include <stdexcept>
 #include <vector>
+#include <iostream>
+#include <limits>
 
 void NeuralNetwork::add_neuron_population(size_t size, std::shared_ptr<Neuron> neuron_type) {
     size_t prev_size = neuron_states_.size();
     // Increase vectors to handle new state variables
-    this->neuron_states_.resize(prev_size + size, neuron_type->get_init_value());
-    this->neuron_last_spikes_.resize(prev_size + size, 0.0);
-    this->neuron_types_.resize(prev_size + size, neuron_type);
-    this->adjacency_.resize(prev_size + size);
+    neuron_states_.resize(prev_size + size, neuron_type->get_init_value());
+    neuron_last_spikes_.resize(prev_size + size, -std::numeric_limits<double>::infinity());
+    neuron_last_updates_.resize(prev_size + size, 0.0);
+    neuron_types_.resize(prev_size + size, neuron_type);
+    adjacency_.resize(prev_size + size);
 
     auto new_pop = std::make_unique<NeuronPopulation>(
         size,
         neuron_type,
-        &(this->neuron_states_[prev_size]),
-        &(this->neuron_last_spikes_[prev_size])
+        &(neuron_states_[prev_size]),
+        &(neuron_last_spikes_[prev_size]),
+        &(neuron_last_updates_[prev_size])
     );
-    this->neuron_populations_.push_back(std::move(new_pop));
+    neuron_populations_.push_back(std::move(new_pop));
 }
 
 void NeuralNetwork::add_synapse(const Synapse& synapse) {
@@ -67,6 +71,7 @@ void NeuralNetwork::run(double T) {
                 spike.time,
                 &neuron_states_[spike.target_index],
                 &neuron_last_spikes_[spike.target_index], 
+                &neuron_last_updates_[spike.target_index],
                 spike.weight)
             ) {
                 if (spike_monitor_) spike_monitor_->on_spike(spike.time, spike.target_index);
@@ -80,16 +85,19 @@ void NeuralNetwork::run(double T) {
         }
         if (std::holds_alternative<UpdateEvent>(e)) {
             auto& update = std::get<UpdateEvent>(e);
+
             // Update all neurons to current time
             for (size_t i = 0; i < neuron_states_.size(); ++i) {
                 neuron_types_[i]->update(
                     update.time,
                     &neuron_states_[i],
                     &neuron_last_spikes_[i],
+                    &neuron_last_updates_[i],
                     0.0
                 );
             }
-            state_monitor_->on_read(update.time, neuron_states_);
+            if (state_monitor_)
+                state_monitor_->on_read(update.time, neuron_states_);
         }
     }
 }
