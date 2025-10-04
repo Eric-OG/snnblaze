@@ -8,6 +8,7 @@ class NeuralNetworkTest : public ::testing::Test {
 protected:
     // Test neuron parameters
     double tau_m = 10.0;       // membrane time constant
+    double C_m = 1.0;          // membrane capacitance
     double v_rest = 0.0;       // resting potential
     double v_reset = 0.0;      // reset potential after spike
     double v_thresh = 1.0;     // threshold
@@ -17,7 +18,7 @@ protected:
 // Adding neuron populations increases network size
 TEST_F(NeuralNetworkTest, AddNeuronPopulation) {
     NeuralNetwork net;
-    auto neuron_type = std::make_shared<LIFNeuron>(tau_m, v_rest, v_reset, v_thresh, refractory);
+    auto neuron_type = std::make_shared<LIFNeuron>(tau_m, C_m, v_rest, v_reset, v_thresh, refractory);
 
     net.add_neuron_population(5, neuron_type);
     EXPECT_EQ(net.size(), 5);
@@ -29,7 +30,7 @@ TEST_F(NeuralNetworkTest, AddNeuronPopulation) {
 // Adding synapses and verifying out-of-range throws
 TEST_F(NeuralNetworkTest, AddSynapse) {
     NeuralNetwork net;
-    auto neuron_type = std::make_shared<LIFNeuron>(tau_m, v_rest, v_reset, v_thresh, refractory);
+    auto neuron_type = std::make_shared<LIFNeuron>(tau_m, C_m, v_rest, v_reset, v_thresh, refractory);
     net.add_neuron_population(2, neuron_type);
 
     // Valid synapse
@@ -44,7 +45,7 @@ TEST_F(NeuralNetworkTest, AddSynapse) {
 // Scheduling spike events and checking out-of-range
 TEST_F(NeuralNetworkTest, ScheduleSpikeEvent) {
     NeuralNetwork net;
-    auto neuron_type = std::make_shared<LIFNeuron>(tau_m, v_rest, v_reset, v_thresh, refractory);
+    auto neuron_type = std::make_shared<LIFNeuron>(tau_m, C_m, v_rest, v_reset, v_thresh, refractory);
     net.add_neuron_population(2, neuron_type);
 
     EXPECT_NO_THROW(net.schedule_spike_event(0.0, 0, 10.0));
@@ -54,7 +55,7 @@ TEST_F(NeuralNetworkTest, ScheduleSpikeEvent) {
 // Running network propagates spikes correctly
 TEST_F(NeuralNetworkTest, SpikePropagation) {
     NeuralNetwork net;
-    auto neuron_type = std::make_shared<LIFNeuron>(tau_m, v_rest, v_reset, v_thresh, refractory);
+    auto neuron_type = std::make_shared<LIFNeuron>(tau_m, C_m, v_rest, v_reset, v_thresh, refractory);
 
     // Create 2 neurons
     net.add_neuron_population(2, neuron_type);

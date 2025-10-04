@@ -27,8 +27,9 @@ PYBIND11_MODULE(pysnnblaze, m) {
         .def("get_init_value", &Neuron::get_init_value);
 
     py::class_<LIFNeuron, Neuron, std::shared_ptr<LIFNeuron>>(m, "LIFNeuron")
-        .def(py::init<double, double, double, double, double>(), 
-             py::arg("tau_m"), py::arg("v_rest"), py::arg("v_reset"), py::arg("v_thresh"), py::arg("refractory"))
+        .def(py::init<double, double, double, double, double, double>(), 
+             py::arg("tau_m"), py::arg("C_m"), py::arg("v_rest"), py::arg("v_reset"), py::arg("v_thresh"), py::arg("refractory"))
+        .def_readwrite("C_m", &LIFNeuron::tau_m_)
         .def_readwrite("tau_m", &LIFNeuron::tau_m_)
         .def_readwrite("v_rest", &LIFNeuron::v_rest_)
         .def_readwrite("v_reset", &LIFNeuron::v_reset_)

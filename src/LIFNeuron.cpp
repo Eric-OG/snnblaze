@@ -2,8 +2,10 @@
 #include <cmath>
 #include <iostream>
 
-LIFNeuron::LIFNeuron(double tau_m, double v_rest, double v_reset, double v_thresh, double refractory)
+LIFNeuron::LIFNeuron(double tau_m, double C_m, double v_rest, double v_reset, double v_thresh, double refractory)
     : tau_m_(tau_m),
+      C_m_(C_m),
+      inv_C_m_(1/C_m),
       v_rest_(v_rest),
       v_reset_(v_reset),
       v_thresh_(v_thresh),
@@ -32,7 +34,7 @@ bool LIFNeuron::update(double t, double* state, double* last_spike, double* last
 }
 
 void LIFNeuron::receive(double value, double* state, double* last_spike, double* last_update) {
-    *state += value; 
+    *state += value/C_m_; // value is an instant current (charge) [C], inv_C_m_ is in [1/F], so state is in [V] 
 }
 
 double LIFNeuron::get_init_value() {

@@ -7,12 +7,13 @@ class LIFNeuronTest : public ::testing::Test {
 protected:
     // Example neuron parameters
     double tau_m = 10.0;       // membrane time constant
+    double C_m = 1.0;          // membrane capacitance
     double v_rest = 0.0;       // resting potential
     double v_reset = 0.0;      // reset potential after spike
     double v_thresh = 1.0;     // threshold
     double refractory = 2.0;   // refractory period
 
-    LIFNeuron neuron{tau_m, v_rest, v_reset, v_thresh, refractory};
+    LIFNeuron neuron{tau_m, C_m, v_rest, v_reset, v_thresh, refractory};
 
     double state = 0.5;        // initial membrane potential
     double last_spike = -std::numeric_limits<double>::infinity();     // set at the start of the timeline
