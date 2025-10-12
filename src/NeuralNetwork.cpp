@@ -67,13 +67,21 @@ void NeuralNetwork::run(double T) {
         if (std::holds_alternative<SpikeEvent>(e)) {
             auto& spike = std::get<SpikeEvent>(e);
 
-            if (neuron_types_[spike.target_index]->update(
+            neuron_types_[spike.target_index]->decay(
                 spike.time,
                 &neuron_states_[spike.target_index],
                 &neuron_last_spikes_[spike.target_index], 
                 &neuron_last_updates_[spike.target_index],
-                spike.weight)
-            ) {
+                1
+            );
+
+            if (neuron_types_[spike.target_index]->receive(
+                spike.time,
+                spike.weight,
+                &neuron_states_[spike.target_index],
+                &neuron_last_spikes_[spike.target_index], 
+                &neuron_last_updates_[spike.target_index]
+            )) {
                 if (spike_monitor_) spike_monitor_->on_spike(spike.time, spike.target_index);
 
                 // Schedules spike events to post-synaptic neurons
@@ -87,13 +95,13 @@ void NeuralNetwork::run(double T) {
             auto& update = std::get<UpdateEvent>(e);
 
             // Update all neurons to current time
-            for (size_t i = 0; i < neuron_states_.size(); ++i) {
-                neuron_types_[i]->update(
+            for (const auto& pop : neuron_populations_) {
+                pop->neuron_class->decay(
                     update.time,
-                    &neuron_states_[i],
-                    &neuron_last_spikes_[i],
-                    &neuron_last_updates_[i],
-                    0.0
+                    pop->state_addr,
+                    pop->last_spike_addr,
+                    pop->last_update_addr,
+                    pop->n_neurons
                 );
             }
             if (state_monitor_)

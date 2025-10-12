@@ -23,7 +23,7 @@ protected:
 // Test that decay brings voltage closer to v_rest
 TEST_F(LIFNeuronTest, DecayTest) {
     double t = 1.0;
-    neuron.update(t, &state, &last_spike, &last_update, 0.0);
+    neuron.decay(t, &state, &last_spike, &last_update, 1);
     EXPECT_LT(state, 0.5); // state should decrease towards v_rest
 }
 
@@ -32,7 +32,8 @@ TEST_F(LIFNeuronTest, ReceiveInputTest) {
     double t = 1.0;
     double input = 0.3;
     std::cout << t;
-    neuron.update(t, &state, &last_spike, &last_update, input);
+    neuron.decay(t, &state, &last_spike, &last_update, 1);
+    neuron.receive(t, input, &state, &last_spike, &last_update);
     double expected = 0.5*exp(-t/tau_m) + v_rest + input;
     EXPECT_NEAR(state, expected, 1e-6);
 }
@@ -41,7 +42,8 @@ TEST_F(LIFNeuronTest, ReceiveInputTest) {
 TEST_F(LIFNeuronTest, SpikeTest) {
     double t = 1.0;
     state = 0.9; // close to threshold
-    bool spiked = neuron.update(t, &state, &last_spike, &last_update, 0.2);
+    neuron.decay(t, &state, &last_spike, &last_update, 1);
+    bool spiked = neuron.receive(t, 0.2, &state, &last_spike, &last_update);
     EXPECT_TRUE(spiked);
     EXPECT_EQ(state, v_reset);
     EXPECT_EQ(last_spike, t);
@@ -52,7 +54,8 @@ TEST_F(LIFNeuronTest, RefractoryTest) {
     last_spike = 1.0;
     state = 2.0; // above threshold
     double t = 2.0; // within refractory (refractory = 2.0)
-    bool spiked = neuron.update(t, &state, &last_spike, &last_update, 0.0);
+    neuron.decay(t, &state, &last_spike, &last_update, 1);
+    bool spiked = neuron.receive(t, 1.0, &state, &last_spike, &last_update);
     EXPECT_FALSE(spiked);
     EXPECT_EQ(last_spike, 1.0); // last spike time unchanged
 }

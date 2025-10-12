@@ -1,6 +1,7 @@
 #include "LIFNeuron.h"
 #include <cmath>
 #include <iostream>
+#include <omp.h>
 
 LIFNeuron::LIFNeuron(double tau_m, double C_m, double v_rest, double v_reset, double v_thresh, double refractory)
     : tau_m_(tau_m),
@@ -11,30 +12,34 @@ LIFNeuron::LIFNeuron(double tau_m, double C_m, double v_rest, double v_reset, do
       v_thresh_(v_thresh),
       refractory_(refractory) {}
 
-bool LIFNeuron::update(double t, double* state, double* last_spike, double* last_update, double input=0.0) {
-    // Leak - exponential decay
-    double& v = *state;
-    double& last_spike_time = *last_spike;
-    double& last_update_time = *last_update;
+bool LIFNeuron::receive(double t, double charge, double* state, double* last_spike, double* last_update) {
+    if ((t - *last_spike) < refractory_) return false;
+    *state += charge*inv_C_m_; // charge is an instant current (charge) [C], inv_C_m_ is in [1/F], so state is in [V] 
 
-    if ((t-last_spike_time) < refractory_) return false; // still refractory - stay at v_reset_
-
-    // Apply exponential decay (first)
-    v = v_rest_ + (v-v_rest_)*std::exp(-(t-last_update_time)/tau_m_);
-    // Apply spike inputs (second)
-    receive(input, state, last_spike, last_update);
-    last_update_time = t;
-
-    if (v >= v_thresh_) {
-        v = v_reset_;
-        last_spike_time = t;
+    if (*state >= v_thresh_) {
+        *state = v_reset_;
+        *last_spike = t;
         return true;
     }
     return false;
 }
 
-void LIFNeuron::receive(double value, double* state, double* last_spike, double* last_update) {
-    *state += value/C_m_; // value is an instant current (charge) [C], inv_C_m_ is in [1/F], so state is in [V] 
+void LIFNeuron::decay(double t, double* state, double* last_spike, double* last_update, size_t n=1) {
+    const double v_rest = v_rest_;
+    const double tau_m  = tau_m_;
+
+    omp_set_num_threads(12);
+    #pragma omp parallel for simd
+    for (size_t i = 0; i < n; ++i) {
+        double dt = t - last_update[i];
+        double refractory_mask = (t - last_spike[i]) >= refractory_;  // 1.0 or 0.0
+        double decay_factor = std::exp(-dt / tau_m);
+        double v_new = v_rest + (state[i] - v_rest) * decay_factor;
+
+        // Apply only if not refractory
+        state[i] = refractory_mask * v_new + (1.0 - refractory_mask) * v_reset_;
+        last_update[i] = refractory_mask * t + (1.0 - refractory_mask) * last_update[i];
+    }
 }
 
 double LIFNeuron::get_init_value() {
