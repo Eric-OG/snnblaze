@@ -84,5 +84,7 @@ PYBIND11_MODULE(pysnnblaze, m) {
         .def("set_spike_monitor", &NeuralNetwork::set_spike_monitor, py::arg("monitor"))
         .def("set_state_monitor", &NeuralNetwork::set_state_monitor, py::arg("monitor"))
         .def("run", &NeuralNetwork::run, py::arg("T"))
-        .def("size", &NeuralNetwork::size);
+        .def("size", &NeuralNetwork::size)
+        .def("set_num_exec_threads", &NeuralNetwork::set_num_exec_threads, py::arg("n"))
+        .def("get_num_exec_threads", &NeuralNetwork::get_num_exec_threads);
 }

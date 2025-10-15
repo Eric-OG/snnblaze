@@ -4,6 +4,12 @@
 #include <vector>
 #include <iostream>
 #include <limits>
+#include <omp.h>
+
+// Always initialize with 1 thread
+NeuralNetwork::NeuralNetwork() : num_exec_threads_(1) {
+    omp_set_num_threads(num_exec_threads_);
+}
 
 void NeuralNetwork::add_neuron_population(size_t size, std::shared_ptr<Neuron> neuron_type) {
     size_t prev_size = neuron_states_.size();
@@ -108,4 +114,13 @@ void NeuralNetwork::run(double T) {
                 state_monitor_->on_read(update.time, neuron_states_);
         }
     }
+}
+
+void NeuralNetwork::set_num_exec_threads(size_t n) {
+    num_exec_threads_ = n;
+    omp_set_num_threads(num_exec_threads_);
+}
+
+size_t NeuralNetwork::get_num_exec_threads() const {
+    return num_exec_threads_;
 }

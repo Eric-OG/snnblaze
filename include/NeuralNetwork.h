@@ -13,7 +13,7 @@
 // NeuralNetwork: event-driven simulation engine
 class NeuralNetwork {
 public:
-    NeuralNetwork() = default;
+    NeuralNetwork();
     ~NeuralNetwork() = default;
 
     void add_neuron_population(size_t size, std::shared_ptr<Neuron> neuron_type);
@@ -25,6 +25,9 @@ public:
 
     void set_spike_monitor(std::shared_ptr<SpikeMonitor> monitor);
     void set_state_monitor(std::shared_ptr<StateMonitor> monitor);
+
+    void set_num_exec_threads(size_t n);
+    size_t get_num_exec_threads() const;
 
     // Run simulation until time T
     void run(double T);
@@ -47,4 +50,7 @@ private:
     // Monitors (optional)
     std::shared_ptr<SpikeMonitor> spike_monitor_;
     std::shared_ptr<StateMonitor> state_monitor_;
+
+    // Sets the number of threads for parallel sections
+    size_t num_exec_threads_;
 };

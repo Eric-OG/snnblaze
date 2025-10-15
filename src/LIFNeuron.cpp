@@ -28,17 +28,30 @@ void LIFNeuron::decay(double t, double* state, double* last_spike, double* last_
     const double v_rest = v_rest_;
     const double tau_m  = tau_m_;
 
-    omp_set_num_threads(12);
-    #pragma omp parallel for simd
-    for (size_t i = 0; i < n; ++i) {
-        double dt = t - last_update[i];
-        double refractory_mask = (t - last_spike[i]) >= refractory_;  // 1.0 or 0.0
-        double decay_factor = std::exp(-dt / tau_m);
-        double v_new = v_rest + (state[i] - v_rest) * decay_factor;
+    if (omp_get_max_threads() == 1){ // single-threaded
+        #pragma omp simd
+        for (size_t i = 0; i < n; ++i) {
+            double dt = t - last_update[i];
+            double refractory_mask = (t - last_spike[i]) >= refractory_;  // 1.0 or 0.0
+            double decay_factor = std::exp(-dt / tau_m);
+            double v_new = v_rest + (state[i] - v_rest) * decay_factor;
 
-        // Apply only if not refractory
-        state[i] = refractory_mask * v_new + (1.0 - refractory_mask) * v_reset_;
-        last_update[i] = refractory_mask * t + (1.0 - refractory_mask) * last_update[i];
+            // Apply only if not refractory
+            state[i] = refractory_mask * v_new + (1.0 - refractory_mask) * v_reset_;
+            last_update[i] = refractory_mask * t + (1.0 - refractory_mask) * last_update[i];
+        }
+    } else { // multi-threaded
+        #pragma omp parallel for simd schedule(static)
+        for (size_t i = 0; i < n; ++i) {
+            double dt = t - last_update[i];
+            double refractory_mask = (t - last_spike[i]) >= refractory_;  // 1.0 or 0.0
+            double decay_factor = std::exp(-dt / tau_m);
+            double v_new = v_rest + (state[i] - v_rest) * decay_factor;
+
+            // Apply only if not refractory
+            state[i] = refractory_mask * v_new + (1.0 - refractory_mask) * v_reset_;
+            last_update[i] = refractory_mask * t + (1.0 - refractory_mask) * last_update[i];
+        }
     }
 }
 
