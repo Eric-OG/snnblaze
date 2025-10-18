@@ -67,8 +67,8 @@ PYBIND11_MODULE(pysnnblaze, m) {
     py::class_<Synapse>(m, "Synapse")
         .def(py::init<size_t, size_t, double, double>(),
              py::arg("srcId"), py::arg("dstId"), py::arg("weight"), py::arg("delay"))
-        .def_readwrite("srcId", &Synapse::srcId)
-        .def_readwrite("dstId", &Synapse::dstId)
+        .def_readwrite("srcId", &Synapse::src_id)
+        .def_readwrite("dstId", &Synapse::dst_id)
         .def_readwrite("weight", &Synapse::weight)
         .def_readwrite("delay", &Synapse::delay);
 

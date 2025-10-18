@@ -13,14 +13,18 @@ LIFNeuron::LIFNeuron(double tau_m, double C_m, double v_rest, double v_reset, do
       refractory_(refractory) {}
 
 bool LIFNeuron::receive(double t, double charge, double* state, double* last_spike, double* last_update) {
-    if ((t - *last_spike) < refractory_) return false;
-    *state += charge*inv_C_m_; // charge is an instant current (charge) [C], inv_C_m_ is in [1/F], so state is in [V] 
+    double last_spk = *last_spike;
+    if (__builtin_expect((t - last_spk) < refractory_, 0))
+        return false;
 
-    if (*state >= v_thresh_) {
+    double v = *state + charge * inv_C_m_;
+    if (__builtin_expect(v >= v_thresh_, 0)) {
         *state = v_reset_;
         *last_spike = t;
         return true;
     }
+
+    *state = v;
     return false;
 }
 

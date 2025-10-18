@@ -45,7 +45,7 @@ private:
     std::vector<std::shared_ptr<Neuron>> neuron_types_;
 
     std::vector<std::vector<Synapse>> adjacency_;
-    std::priority_queue<Event, std::vector<Event>, EventCompare> eventQueue_;
+    std::priority_queue<Event, std::vector<Event>, EventCompare> event_queue_;
 
     // Monitors (optional)
     std::shared_ptr<SpikeMonitor> spike_monitor_;

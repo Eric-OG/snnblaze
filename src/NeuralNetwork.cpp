@@ -31,10 +31,10 @@ void NeuralNetwork::add_neuron_population(size_t size, std::shared_ptr<Neuron> n
 }
 
 void NeuralNetwork::add_synapse(const Synapse& synapse) {
-    if (synapse.srcId >= neuron_states_.size() || synapse.dstId >= neuron_states_.size()) {
+    if (synapse.src_id >= neuron_states_.size() || synapse.dst_id >= neuron_states_.size()) {
         throw std::out_of_range("Neuron index out of bounds for synapse");
     }
-    adjacency_[synapse.srcId].push_back(synapse);
+    adjacency_[synapse.src_id].push_back(synapse);
 }
 
 void NeuralNetwork::set_spike_monitor(std::shared_ptr<SpikeMonitor> monitor) {
@@ -47,7 +47,7 @@ void NeuralNetwork::set_state_monitor(std::shared_ptr<StateMonitor> monitor) {
 
 void NeuralNetwork::schedule_spike_event(double time, size_t neuron_index, double weight) {
     if (neuron_index >= neuron_states_.size()) throw std::out_of_range("Neuron index out of bounds");
-    eventQueue_.push(SpikeEvent{time, neuron_index, weight});
+    event_queue_.push(SpikeEvent{time, neuron_index, weight});
 }
 
 size_t NeuralNetwork::size() const {
@@ -58,14 +58,14 @@ void NeuralNetwork::run(double T) {
     // Schedule periodic update events
     if (state_monitor_) {
         for (double t = 0.0; t <= T; t += state_monitor_->get_reading_interval())
-            eventQueue_.push(UpdateEvent{t});
+            event_queue_.push(UpdateEvent{t});
     }
 
     // Main simulation loop
-    while (!eventQueue_.empty()) {
+    while (!event_queue_.empty()) {
         // Retrieve event and test if within simulation time
-        Event e = eventQueue_.top();
-        eventQueue_.pop();
+        Event e = event_queue_.top();
+        event_queue_.pop();
         // Get the time regardless of event type
         auto get_time = [](const auto& ev) { return ev.time; };
         if (std::visit(get_time, e) > T) break;
@@ -93,7 +93,7 @@ void NeuralNetwork::run(double T) {
                 // Schedules spike events to post-synaptic neurons
                 for (const auto& syn : adjacency_[spike.target_index]) {
                     double arrivalTime = spike.time + syn.delay;
-                    eventQueue_.push(SpikeEvent{arrivalTime, syn.dstId, syn.weight});
+                    event_queue_.push(SpikeEvent{arrivalTime, syn.dst_id, syn.weight});
                 }
             }
         }
