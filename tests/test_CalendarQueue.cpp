@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <queue>
 
 // ---------- Basic order test ----------
 TEST(CalendarQueueTest, BasicOrder) {
@@ -17,7 +18,6 @@ TEST(CalendarQueueTest, BasicOrder) {
     for (const auto& exp : expected) {
         ASSERT_FALSE(cq.empty());
         auto ev = cq.top();
-        std::cout << exp << " " << ev.value << std::endl;
         EXPECT_EQ(ev.value, exp);
         cq.pop();
     }
@@ -85,23 +85,31 @@ TEST(CalendarQueueTest, RandomizedInsert) {
 
 // ---------- Stress test (optional) ----------
 TEST(CalendarQueueTest, StressTest) {
-    CalendarQueue<int> cq(64, 1.0);
-    const int N = 50000;
+    CalendarQueue<int> cq(32768, 0.1);
+    const int N = 100000;
 
     std::vector<std::pair<double, int>> events;
     events.reserve(N);
+
+    constexpr double EPS = 1e-9;
+
+    // Generate N unique random times in [0,1000)
     for (int i = 0; i < N; ++i) {
         double t = static_cast<double>(rand()) / RAND_MAX * 1000.0;
+        t += i * EPS;
         events.emplace_back(t, i);
     }
 
-    // Push all events
+    // Shuffle the events to ensure insertion is not in sorted order
+    std::random_shuffle(events.begin(), events.end());
+
+    // Push all events in random order
     for (auto& e : events)
         cq.push(e.first, e.second);
 
-    // Sort by time
-    std::sort(events.begin(), events.end(),
-              [](const auto& a, const auto& b) { return a.first < b.first; });
+    // Sort events by time for validation (stable_sort preserves order of very close times)
+    std::stable_sort(events.begin(), events.end(),
+                     [](const auto& a, const auto& b) { return a.first < b.first; });
 
     // Pop all events and check order
     for (auto& e : events) {
@@ -110,4 +118,50 @@ TEST(CalendarQueueTest, StressTest) {
         cq.pop();
     }
     EXPECT_TRUE(cq.empty());
+}
+
+// ---------- Stress test with std::priority_queue ----------
+TEST(ConventionalQueueTest, StressTest) {
+    using Event = std::pair<double, int>;
+
+    const int N = 100000;
+
+    std::vector<Event> events;
+    events.reserve(N);
+
+    constexpr double EPS = 1e-9; // small offset to ensure uniqueness
+
+    // Generate N unique random times in [0,1000)
+    for (int i = 0; i < N; ++i) {
+        double t = static_cast<double>(rand()) / RAND_MAX * 1000.0;
+        t += i * EPS; // make times unique
+        events.emplace_back(t, i);
+    }
+
+    // Shuffle the events to ensure insertion is not in sorted order
+    std::random_shuffle(events.begin(), events.end());
+
+    // Min-heap comparator (smallest time at top)
+    auto cmp = [](const Event& a, const Event& b) { return a.first > b.first; };
+    std::priority_queue<Event, std::vector<Event>, decltype(cmp)> pq(cmp);
+
+    // Push all events in random order
+    for (auto& e : events)
+        pq.push(e);
+
+    // Sort events by time for validation (stable_sort preserves order of very close times)
+    std::stable_sort(events.begin(), events.end(),
+                     [](const Event& a, const Event& b) { return a.first < b.first; });
+
+    // Pop all events and check order
+    for (auto& e : events) {
+        auto ev = pq.top();
+        EXPECT_EQ(ev.second, e.second);
+        if (ev.second != e.second) {
+            std::cout << "Expected time: " << e.first << ", Actual time: " << ev.first << std::endl;
+        }
+        pq.pop();
+    }
+
+    EXPECT_TRUE(pq.empty());
 }

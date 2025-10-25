@@ -60,10 +60,6 @@ public:
         // Update internal clock and last bucket index
         min_time = ev.time;
         last_bucket = idx;
-
-        // Resizes only after popping (accumulates events with push first)
-        if (need_resize())
-            resize_buckets(bucket_count * 2, bucket_width * DEFAULT_WIDTH_FACTOR);
     }
 
     // Insert new event
@@ -78,6 +74,9 @@ public:
                                [&](const Event& ev) { return ev.time > e.time; });
         bucket.insert(it, e);
         ++size_;
+
+        if (need_resize())
+            resize_buckets(bucket_count * 2, bucket_width * DEFAULT_WIDTH_FACTOR);
     }
 
 private:
