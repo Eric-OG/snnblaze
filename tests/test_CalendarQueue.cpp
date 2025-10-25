@@ -85,8 +85,8 @@ TEST(CalendarQueueTest, RandomizedInsert) {
 
 // ---------- Stress test (optional) ----------
 TEST(CalendarQueueTest, StressTest) {
-    CalendarQueue<int> cq(32768, 0.1);
-    const int N = 100000;
+    CalendarQueue<int> cq(100000, 0.005);
+    const int N = 500000;
 
     std::vector<std::pair<double, int>> events;
     events.reserve(N);
@@ -124,7 +124,7 @@ TEST(CalendarQueueTest, StressTest) {
 TEST(ConventionalQueueTest, StressTest) {
     using Event = std::pair<double, int>;
 
-    const int N = 100000;
+    const int N = 500000;
 
     std::vector<Event> events;
     events.reserve(N);
