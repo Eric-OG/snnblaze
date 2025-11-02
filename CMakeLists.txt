@@ -31,6 +31,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 # ----------------------------------
 add_library(snnblaze
     src/LIFNeuron.cpp
+    src/InputNeuron.cpp
     src/NeuralNetwork.cpp
     src/SpikeMonitor.cpp
     src/StateMonitor.cpp

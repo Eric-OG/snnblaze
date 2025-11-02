@@ -3,6 +3,7 @@
 #include <pybind11/numpy.h>     // For NumPy arrays if needed
 #include "Neuron.h"
 #include "LIFNeuron.h"
+#include "InputNeuron.h"
 #include "SpikeMonitor.h"
 #include "Synapse.h"
 #include "NeuralNetwork.h"
@@ -48,6 +49,22 @@ PYBIND11_MODULE(pysnnblaze, m) {
             self.receive(t, charge, state_ptr, lastSpike_ptr, lastUpdate_ptr);
         })
         .def("get_init_value", &LIFNeuron::get_init_value);
+    
+    py::class_<InputNeuron, Neuron, std::shared_ptr<InputNeuron>>(m, "InputNeuron")
+        .def(py::init<>())
+        .def("decay", [](InputNeuron &self, double t, py::array_t<double> state, py::array_t<double> lastSpike, py::array_t<double> lastUpdate, size_t n) {
+            auto state_ptr = static_cast<double*>(state.request().ptr);
+            auto lastSpike_ptr = static_cast<double*>(lastSpike.request().ptr);
+            auto lastUpdate_ptr = static_cast<double*>(lastUpdate.request().ptr);
+            return self.decay(t, state_ptr, lastSpike_ptr, lastUpdate_ptr, n);
+        })
+        .def("receive", [](InputNeuron &self, double t, double charge, py::array_t<double> state, py::array_t<double> lastSpike, py::array_t<double> lastUpdate) {
+            auto state_ptr = static_cast<double*>(state.request().ptr);
+            auto lastSpike_ptr = static_cast<double*>(lastSpike.request().ptr);
+            auto lastUpdate_ptr = static_cast<double*>(lastUpdate.request().ptr);
+            self.receive(t, charge, state_ptr, lastSpike_ptr, lastUpdate_ptr);
+        })
+        .def("get_init_value", &InputNeuron::get_init_value);
     
     py::class_<SpikeMonitor, std::shared_ptr<SpikeMonitor>>(m, "SpikeMonitor")
         .def(py::init<>())  // default constructor
