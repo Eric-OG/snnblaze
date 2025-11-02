@@ -19,12 +19,12 @@ private:
     TimeT min_time;        // Current simulation time (last popped event)
     size_t size_;
     size_t last_bucket;    // Index of last bucket processed
-    static constexpr double DEFAULT_WIDTH_FACTOR = 2.0;
-    static constexpr size_t DEFAULT_BUCKETS = 128;
+    static constexpr double DEFAULT_WIDTH_FACTOR = 1.0;
+    static constexpr size_t DEFAULT_BUCKETS = 10000;
     static constexpr TimeT EPS = 1e-12; // small epsilon for floating-point safety
 
 public:
-    explicit CalendarQueue(size_t initialBuckets = DEFAULT_BUCKETS, TimeT initialWidth = 1.0)
+    explicit CalendarQueue(size_t initialBuckets = DEFAULT_BUCKETS, TimeT initialWidth = 0.01)
         : bucket_count(initialBuckets),
           bucket_width(initialWidth),
           min_time(std::numeric_limits<TimeT>::lowest()),

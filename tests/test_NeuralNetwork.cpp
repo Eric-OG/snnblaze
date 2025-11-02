@@ -66,7 +66,7 @@ TEST_F(NeuralNetworkTest, SpikePropagation) {
     // Set spike monitor
     auto monitor = std::make_shared<SpikeMonitor>();
     SpikeMonitor* monitor_ptr = monitor.get();
-    net.set_spike_monitor(std::move(monitor));
+    net.set_spike_monitor(monitor);
 
     // Schedule initial spike for neuron 0
     net.schedule_spike_event(0.0, 0, 1.5);  // strong enough to spike
@@ -79,3 +79,78 @@ TEST_F(NeuralNetworkTest, SpikePropagation) {
     EXPECT_EQ(monitor_ptr->spike_list[0].first, 0.);
     EXPECT_EQ(monitor_ptr->spike_list[1].first, 1.);
 }
+
+// Clear the monitors and verify reset
+TEST_F(NeuralNetworkTest, MonitorReset) {
+    NeuralNetwork net;
+    auto neuron_type = std::make_shared<LIFNeuron>(tau_m, C_m, v_rest, v_reset, v_thresh, refractory);
+
+    // Create 2 neurons
+    net.add_neuron_population(2, neuron_type);
+    // Connect neuron 0 -> neuron 1
+    Synapse syn{0, 1, 1.5, 1.0};
+    net.add_synapse(syn);
+
+    // Set monitors
+    auto spike_monitor = std::make_shared<SpikeMonitor>();
+    SpikeMonitor* spike_monitor_ptr = spike_monitor.get();
+    net.set_spike_monitor(spike_monitor);
+    auto state_monitor = std::make_shared<StateMonitor>(1.0);
+    StateMonitor* state_monitor_ptr = state_monitor.get();
+    net.set_state_monitor(state_monitor);
+
+    // Schedule initial spike for neuron 0
+    net.schedule_spike_event(0.0, 0, 1.5);  // strong enough to spike
+
+    // Run network
+    net.run(5.0);
+
+    // Expect data in monitors
+    EXPECT_GT(spike_monitor_ptr->spike_list.size(), 1);
+    EXPECT_GT(state_monitor_ptr->state_vector_list.size(), 1);
+
+    // Reset monitors
+    net.reset_monitors();
+
+    EXPECT_EQ(spike_monitor_ptr->spike_list.size(), 0);
+    EXPECT_EQ(state_monitor_ptr->state_vector_list.size(), 0);
+}
+
+// Run simulation in two parts and verify time continuity
+TEST_F(NeuralNetworkTest, TimeContinuity) {
+    NeuralNetwork net;
+    auto neuron_type = std::make_shared<LIFNeuron>(tau_m, C_m, v_rest, v_reset, v_thresh, refractory);
+
+    // Create 2 neurons
+    net.add_neuron_population(2, neuron_type);
+    // Connect neuron 0 -> neuron 1
+    Synapse syn{0, 1, 1.5, 0.5};
+    net.add_synapse(syn);
+
+    // Set spike monitor
+    auto monitor = std::make_shared<SpikeMonitor>();
+    SpikeMonitor* monitor_ptr = monitor.get();
+    net.set_spike_monitor(monitor);
+
+    // Schedule initial spike for neuron 0
+    net.schedule_spike_event(0.0, 0, 1.5);
+
+    // Run network
+    net.run(5.0);
+
+    EXPECT_EQ(monitor_ptr->spike_list.size(), 2);
+    EXPECT_EQ(monitor_ptr->spike_list[0].first, 0.);
+    EXPECT_EQ(monitor_ptr->spike_list[1].first, 0.5);
+
+    // Schedule second spike for neuron 0
+    net.schedule_spike_event(0.0, 0, 1.5);
+
+    // Run network
+    net.run(5.0);
+
+    EXPECT_EQ(monitor_ptr->spike_list.size(), 4);
+    EXPECT_EQ(monitor_ptr->spike_list[2].first, 5.);
+    EXPECT_EQ(monitor_ptr->spike_list[3].first, 5.5);
+}
+
+

@@ -13,6 +13,9 @@
 // NeuralNetwork: event-driven simulation engine
 class NeuralNetwork {
 public:
+    // Current simulation time - used when performing multiple runs
+    double sim_time;
+
     NeuralNetwork();
     ~NeuralNetwork() = default;
 
@@ -31,6 +34,8 @@ public:
 
     // Run simulation until time T
     void run(double T);
+
+    void reset_monitors();
 
     size_t size() const;
 

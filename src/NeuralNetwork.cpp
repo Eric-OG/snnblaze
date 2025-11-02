@@ -9,6 +9,7 @@
 // Always initialize with 1 thread
 NeuralNetwork::NeuralNetwork() : num_exec_threads_(1) {
     omp_set_num_threads(num_exec_threads_);
+    sim_time = 0.0;
 }
 
 void NeuralNetwork::add_neuron_population(size_t size, std::shared_ptr<Neuron> neuron_type) {
@@ -47,7 +48,8 @@ void NeuralNetwork::set_state_monitor(std::shared_ptr<StateMonitor> monitor) {
 
 void NeuralNetwork::schedule_spike_event(double time, size_t neuron_index, double weight) {
     if (neuron_index >= neuron_states_.size()) throw std::out_of_range("Neuron index out of bounds");
-    event_queue_.push(SpikeEvent{time, neuron_index, weight});
+    // Events added after current sim_time
+    event_queue_.push(SpikeEvent{sim_time + time, neuron_index, weight});
 }
 
 size_t NeuralNetwork::size() const {
@@ -57,7 +59,7 @@ size_t NeuralNetwork::size() const {
 void NeuralNetwork::run(double T) {
     // Schedule periodic update events
     if (state_monitor_) {
-        for (double t = 0.0; t <= T; t += state_monitor_->get_reading_interval())
+        for (double t = sim_time; t <= sim_time+T; t += state_monitor_->get_reading_interval())
             event_queue_.push(UpdateEvent{t});
     }
 
@@ -68,7 +70,7 @@ void NeuralNetwork::run(double T) {
         event_queue_.pop();
         // Get the time regardless of event type
         auto get_time = [](const auto& ev) { return ev.time; };
-        if (std::visit(get_time, e) > T) break;
+        if (std::visit(get_time, e) > sim_time+T) break;
 
         if (std::holds_alternative<SpikeEvent>(e)) {
             auto& spike = std::get<SpikeEvent>(e);
@@ -114,6 +116,15 @@ void NeuralNetwork::run(double T) {
                 state_monitor_->on_read(update.time, neuron_states_);
         }
     }
+
+    // Update simulation time for subsequent runs
+    sim_time += T;
+}
+
+void NeuralNetwork::reset_monitors() {
+    // Reset monitors
+    if (spike_monitor_) spike_monitor_->reset_spikes();
+    if (state_monitor_) state_monitor_->reset_recording();
 }
 
 void NeuralNetwork::set_num_exec_threads(size_t n) {
