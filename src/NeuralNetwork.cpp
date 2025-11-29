@@ -21,6 +21,15 @@ void NeuralNetwork::add_neuron_population(size_t size, std::shared_ptr<Neuron> n
     neuron_types_.resize(prev_size + size, neuron_type);
     adjacency_.resize(prev_size + size);
 
+    // Recalculate pointers to new vector position
+    size_t offset = 0;
+    for (auto& pop : neuron_populations_) {
+        pop->state_addr       = &(neuron_states_[offset]);
+        pop->last_spike_addr  = &(neuron_last_spikes_[offset]);
+        pop->last_update_addr = &(neuron_last_updates_[offset]);
+        offset += pop->n_neurons;   // move to next block
+    }
+
     auto new_pop = std::make_unique<NeuronPopulation>(
         size,
         neuron_type,
